@@ -1,0 +1,10 @@
+//Cufon.replace('#menu ul li a', { color: '-linear-gradient(#fff, #000)' });
+Cufon.replace('.loginform, .forgetform, .menu', { fontFamily: 'myriad', fontSize:'16px' });
+Cufon.replace('.menu', { fontFamily: 'myriad', fontSize:'14px' });
+Cufon.replace('.register', { fontFamily: 'myriad', fontSize:'13px' });
+Cufon.replace('things', { fontFamily: 'futura', color: '#00f'});
+Cufon.replace('start', { fontFamily: 'futura', color: '#00f' });
+Cufon.replace('open', { fontFamily: 'helworld', color: '-linear-gradient(#8c0c03, #e21506)' });
+Cufon.replace('inform', { fontFamily: 'helworld', color: '-linear-gradient(#8c0c03, #e21506)' });
+Cufon.replace('.title', { fontFamily: 'Myriad Pro Regular', hover: true });
+//Cufon.replace('#menu ul li a', { hover: { color: 'aqua'} });

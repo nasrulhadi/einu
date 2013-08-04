@@ -33,9 +33,9 @@ $dist_group = mysql_real_escape_string($_GET['gid']);
 $dist_region = mysql_real_escape_string($_GET['rid']);
 $prev_month = strtolower(Date(F, strtotime($month . " last month")));
 
-echo $prev_month;
+/*echo $prev_month;
 echo $dist_region;
-echo $month;
+echo $month;*/
 
 if (!empty($dist_region)){
 $group_query = mysql_query("select * from region where id_region='$dist_region'") or die(mysql_error());
@@ -185,6 +185,8 @@ select *,nd_point+vol_point+mps_point as tot_point from points inner join distri
                      </tr>
 					 <?
 					 }
+
+					 //echo "SELECT  *, ( select sum( nd_point )+sum( vol_point )+sum( mps_point ) from points pts where pts.distributor_id = distributor.id_distributor ) overall_points FROM distributor INNER JOIN points on distributor.id_distributor = points.distributor_id inner join `group` on distributor.group=group_id where `group`.group_zone='$dist_region' group by id_distributor order by ABS(overall_points) DESC";
 					 while ($data = mysql_fetch_array($q)){
 					 
 					 // get rank by region
@@ -194,8 +196,9 @@ select *,nd_point+vol_point+mps_point as tot_point from points inner join distri
 					 $pnt = mysql_fetch_array($oq);
 					 
 					 // get rank of previous month
-					 $qpm = mysql_query("set @rank:=0;");
-					 $qpm = mysql_query("SELECT @rank:=@rank+1 AS rank, p.* FROM points p inner join distributor d on p.distributor_id=d.id_distributor inner join `group` g on d.group=g.group_id where p.month='$prev_month' and g.group_zone='$dist_region' ORDER BY p.tot_point DESC") or die(mysql_error());
+					 //$qpm = mysql_query("set @rank:=0;");
+					 //$qpm = mysql_query("SELECT @rank:=@rank+1 AS rank, p.* FROM points p inner join distributor d on p.distributor_id=d.id_distributor inner join `group` g on d.group=g.group_id where p.month='$prev_month' and g.group_zone='$dist_region' ORDER BY p.tot_point DESC") or die(mysql_error());
+					 $qpm = mysql_query("SELECT  *, ( select sum( nd_point )+sum( vol_point )+sum( mps_point ) from points pts where pts.distributor_id = distributor.id_distributor and month != '$month' ) overall_points FROM distributor INNER JOIN points on distributor.id_distributor = points.distributor_id inner join `group` on distributor.group=group_id where `group`.group_zone='$dist_region' group by id_distributor order by ABS(overall_points) DESC") or die(mysql_error());
 					 } 
 					 if (!empty($dist_group)){
 					 // get rank by group
@@ -205,15 +208,30 @@ select *,nd_point+vol_point+mps_point as tot_point from points inner join distri
 					 $pnt = mysql_fetch_array($oq);
 					 
 					 // get rank of previous month
-					 $qpm = mysql_query("set @rank:=0;");
-					 $qpm = mysql_query("SELECT @rank:=@rank+1 AS rank, p.* FROM points p inner join distributor d on p.distributor_id=d.id_distributor where p.month='$prev_month' and d.group='$dist_group' ORDER BY p.tot_point DESC") or die(mysql_error());
+					 //$qpm = mysql_query("set @rank:=0;");
+					 //$qpm = mysql_query("SELECT @rank:=@rank+1 AS rank, p.* FROM points p inner join distributor d on p.distributor_id=d.id_distributor where p.month='$prev_month' and d.group='$dist_group' ORDER BY p.tot_point DESC") or die(mysql_error());
+					 $qpm = mysql_query("SELECT  *, ( select sum( nd_point )+sum( vol_point )+sum( mps_point ) from points pts where pts.distributor_id = distributor.id_distributor and month != '$month' ) overall_points FROM distributor INNER JOIN points on distributor.id_distributor = points.distributor_id inner join `group` on distributor.group=group_id where distributor.group='$dist_group' group by id_distributor order by ABS(overall_points) DESC") or die(mysql_error());
 					 }
 					 
+					 $nomor = 1;
 					 while ($dpm = mysql_fetch_array($qpm)){
 					 	if ($dpm['distributor_id'] == $dist_id){
-							$last_month_pos = $dpm['rank'];
+							$last_month_pos = $nomor;
 						}
+						$nomor++;
 					 }
+
+					 // menghitung rata2 average_point
+					 $sum = 0;
+					 $avp = mysql_query("SELECT * FROM `points` where distributor_id = ".$data['distributor_id']);
+					 while($baris = mysql_fetch_assoc($avp)){
+					 	$average_points = $baris['average_point'];
+					 	$sum += $average_points;
+					 }
+
+					 $jumlahData = mysql_num_rows($avp);
+					 $hasilAveragePoint = $sum / $jumlahData;
+
 					 // create image rank
 					 if ((int)$cnt > (int)$last_month_pos) $img_pos = 'down.png';
 					 else if ((int)$cnt < (int)$last_month_pos) $img_pos = 'up.png';
@@ -227,7 +245,7 @@ select *,nd_point+vol_point+mps_point as tot_point from points inner join distri
                         <td><?php echo round($pnt['vol_point'], 1); ?></td>
                         <td><?php echo round($pnt['mps_point'], 1); ?></td>
                         <td><?php echo round($pnt['tot_point'], 1); ?></td>
-                        <td><?php echo number_format($pnt['average_point'], 1, '.', '');; ?></td>
+                        <td><?php echo number_format($hasilAveragePoint, 1, '.', '');; ?></td>
                      </tr>
 					 <tr style="display:none;">
 						 <td colspan="9" class="full">
